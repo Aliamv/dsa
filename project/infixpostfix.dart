@@ -56,13 +56,53 @@ class ExpressionConverter {
     return postfix;
   }
 
+  // String infixToPrefix(String infix) {
+  //   String reversed = infix.split('').reversed.join();
+  //   reversed =
+  //       reversed.replaceAll('(', '#').replaceAll(')', '(').replaceAll('#', ')');
+  //   String reversedPostfix = infixToPostfix(reversed);
+  //   return reversedPostfix.split('').reversed.join();
+  // }
   String infixToPrefix(String infix) {
-    String reversed = infix.split('').reversed.join();
-    reversed =
-        reversed.replaceAll('(', '#').replaceAll(')', '(').replaceAll('#', ')');
-    String reversedPostfix = infixToPostfix(reversed);
-    return reversedPostfix.split('').reversed.join();
+    List<String> stack = [];
+    List<String> output = [];
+
+    for (int i = infix.length - 1; i >= 0; i--) {
+      String c = infix[i];
+
+      if (c == ' ') continue;
+
+      if (c == '-' && (i == 0 || infix[i - 1] == ')')) {
+        output.add('~');
+        continue;
+      }
+
+      if (isOperand(c)) {
+        output.add(c);
+      } else if (c == ')') {
+        stack.add(c);
+      } else if (c == '(') {
+        while (stack.isNotEmpty && stack.last != ')') {
+          output.add(stack.removeLast());
+        }
+        stack.removeLast();
+      } else if (isOperator(c)) {
+        while (stack.isNotEmpty &&
+            precedence(stack.last) > precedence(c) &&
+            stack.last != ')') {
+          output.add(stack.removeLast());
+        }
+        stack.add(c);
+      }
+    }
+
+    while (stack.isNotEmpty) {
+      output.add(stack.removeLast());
+    }
+
+    return output.reversed.join();
   }
+
 
   num evaluatePostfix(String postfix) {
     List<num> stack = [];
